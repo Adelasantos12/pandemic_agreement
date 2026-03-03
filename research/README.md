@@ -65,7 +65,7 @@ Minimum columns:
 ## 5) Run
 
 ```bash
-pip install pandas scikit-learn numpy shap
+pip install -r research/requirements-ml.txt
 python research/latam_treaty_capacity_model.py \
   --data data/latam_treaty_panel.csv \
   --target implementation_capacity \
@@ -86,9 +86,31 @@ python research/latam_treaty_capacity_model.py \
 Generated in `research/output/`:
 - `model_summary.json`: best model, CV score, test metrics, selected hyperparameters.
 - `feature_importance.csv`: ranked variable importance from best tree model.
+- `country_scores.csv`: country-year probabilities (`y_prob`) and tier labels (`High/Medium/Low`) for train/test splits.
+- `country_benchmarks_latest.csv`: latest-year country benchmark ranking.
 - `shap_values.npy`: local attribution values if SHAP execution succeeds.
 
-## 7) Interpretation guidance for objectives
+## 7) Visualización en Railway (dashboard por país)
+
+Sí, se puede desplegar en Railway y visualizar resultados tipo data science.
+
+Después de generar `research/output/*`, levanta la API (Railway usa esto en el servicio `web`):
+
+```bash
+uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT
+```
+
+Endpoints de visualización/consulta:
+- `GET /research/dashboard` → dashboard interactivo (Plotly) con:
+  - barra por país (último año)
+  - trayectoria temporal por país
+- `GET /research/overview?output_dir=research/output`
+- `GET /research/countries?output_dir=research/output&latest_year_only=true`
+- `GET /research/country/{country}?output_dir=research/output`
+
+Si guardas outputs en otra ruta/persistencia, ajusta `output_dir` en query params.
+
+## 8) Interpretation guidance for objectives
 
 ### Objective 1: Build predictive model integrating legislative, governance, and political stability indicators
 - Compare RF vs GBM by **test ROC-AUC** first, then F1.
@@ -100,7 +122,7 @@ Generated in `research/output/`:
 - If SHAP is available, compute average absolute SHAP values by feature and by country clusters.
 - Conduct robustness checks: retrain excluding one variable block at a time (ablation) to quantify block-level contributions in CAS terms.
 
-## 8) Suggested benchmark outputs (country-level)
+## 9) Suggested benchmark outputs (country-level)
 
 Create benchmark profiles for each country using:
 - Predicted probability of high implementation capacity.

@@ -198,12 +198,16 @@ def main() -> None:
     excluded = {args.target, "country", "year"}
     feature_cols = [c for c in df.columns if c not in excluded]
 
+    id_cols = [c for c in ["country", "year"] if c in df.columns]
+    ids = df[id_cols].copy() if id_cols else pd.DataFrame(index=df.index)
+
     X = df[feature_cols]
     y = df[args.target].astype(int)
 
-    X_train, X_test, y_train, y_test = train_test_split(
+    X_train, X_test, y_train, y_test, ids_train, ids_test = train_test_split(
         X,
         y,
+        ids,
         test_size=args.test_size,
         random_state=args.random_state,
         stratify=y,
@@ -241,6 +245,40 @@ def main() -> None:
     best_search = {"random_forest": rf_search, "gbm": gbm_search}[best_name]
     best_model = best_search.best_estimator_
 
+    train_prob = best_model.predict_proba(X_train)[:, 1]
+    test_prob = best_model.predict_proba(X_test)[:, 1]
+
+    train_scores = ids_train.reset_index(drop=True)
+    train_scores["split"] = "train"
+    train_scores["y_true"] = y_train.reset_index(drop=True)
+    train_scores["y_prob"] = train_prob
+    train_scores["y_pred"] = (train_prob >= 0.5).astype(int)
+
+    test_scores = ids_test.reset_index(drop=True)
+    test_scores["split"] = "test"
+    test_scores["y_true"] = y_test.reset_index(drop=True)
+    test_scores["y_prob"] = test_prob
+    test_scores["y_pred"] = (test_prob >= 0.5).astype(int)
+
+    country_scores = pd.concat([train_scores, test_scores], ignore_index=True)
+
+    def tier(prob: float) -> str:
+        if prob >= 0.7:
+            return "High"
+        if prob >= 0.4:
+            return "Medium"
+        return "Low"
+
+    country_scores["implementation_tier"] = country_scores["y_prob"].apply(tier)
+    country_scores.to_csv(output_dir / "country_scores.csv", index=False)
+
+    if {"country", "year"}.issubset(country_scores.columns):
+        latest_year = int(country_scores["year"].max())
+        latest = country_scores[country_scores["year"] == latest_year].copy()
+        latest = latest[["country", "year", "y_prob", "implementation_tier"]]
+        latest = latest.sort_values("y_prob", ascending=False)
+        latest.to_csv(output_dir / "country_benchmarks_latest.csv", index=False)
+
     transformed_feature_names = best_model.named_steps["preprocess"].get_feature_names_out()
     importances = compute_tree_importance(best_model, list(transformed_feature_names))
     importances.to_csv(output_dir / "feature_importance.csv", index=False)
@@ -253,6 +291,7 @@ def main() -> None:
         "train_size": int(X_train.shape[0]),
         "test_size": int(X_test.shape[0]),
         "best_model": best_name,
+        "country_scores_file": "country_scores.csv",
         "models": model_results,
         "shap": shap_status,
     }
