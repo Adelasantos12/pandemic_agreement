@@ -62,7 +62,34 @@ Minimum columns:
 - `implementation_capacity` (0/1)
 - Predictor columns for each conceptual block above
 
-## 5) Run
+
+## 5) Bases de datos (sí, con fuentes reales)
+
+Tienes dos scripts para adquisición y armado del panel:
+
+1) `research/download_public_sources.py`
+- Te muestra URLs oficiales (WGI, V-Dem, Manifesto) y permite descargar archivos directos con `--url`.
+- Ejemplo:
+
+```bash
+python research/download_public_sources.py   --url "<direct_file_url_1>"   --url "<direct_file_url_2>"   --out-dir data/raw
+```
+
+2) `research/build_latam_panel.py`
+- Une extractos de V-Dem + WGI + Manifesto (y opcionalmente treaty engagement) a un panel país-año para LATAM (18 países, 2005-2023 por defecto).
+- Ejemplo:
+
+```bash
+python research/build_latam_panel.py   --vdem data/raw/vdem_extract.csv   --wgi data/raw/wgi_extract.csv   --manifesto data/raw/manifesto_extract.csv   --treaty data/raw/treaty_engagement.csv   --output data/latam_treaty_panel.csv
+```
+
+Columnas esperadas (mínimas) por fuente:
+- V-Dem: `country_text_id`, `year`, `v2xlg_legcon`, `v2lginvstp`, `v2xcl_rol`, `v2x_polyarchy`
+- WGI: `Country Code`, `Year`, `GE.EST`, `CC.EST`, `PV.EST`, `RL.EST`
+- Manifesto: `country` (ISO3), `year` o `edate`, `rile`, `per503`
+- Treaty (opcional): `iso3`, `year`, `treaty_compliance_score`, `global_health_forum_participation`
+
+## 6) Run
 
 ```bash
 pip install -r research/requirements-ml.txt
@@ -81,7 +108,7 @@ python research/latam_treaty_capacity_model.py \
   --pca-components 0.95
 ```
 
-## 6) Outputs
+## 7) Outputs
 
 Generated in `research/output/`:
 - `model_summary.json`: best model, CV score, test metrics, selected hyperparameters.
@@ -90,7 +117,7 @@ Generated in `research/output/`:
 - `country_benchmarks_latest.csv`: latest-year country benchmark ranking.
 - `shap_values.npy`: local attribution values if SHAP execution succeeds.
 
-## 7) Visualización en Railway (dashboard por país)
+## 8) Visualización en Railway (dashboard por país)
 
 Sí, se puede desplegar en Railway y visualizar resultados tipo data science.
 
@@ -110,7 +137,7 @@ Endpoints de visualización/consulta:
 
 Si guardas outputs en otra ruta/persistencia, ajusta `output_dir` en query params.
 
-## 8) Interpretation guidance for objectives
+## 9) Interpretation guidance for objectives
 
 ### Objective 1: Build predictive model integrating legislative, governance, and political stability indicators
 - Compare RF vs GBM by **test ROC-AUC** first, then F1.
@@ -122,7 +149,7 @@ Si guardas outputs en otra ruta/persistencia, ajusta `output_dir` en query param
 - If SHAP is available, compute average absolute SHAP values by feature and by country clusters.
 - Conduct robustness checks: retrain excluding one variable block at a time (ablation) to quantify block-level contributions in CAS terms.
 
-## 9) Suggested benchmark outputs (country-level)
+## 10) Suggested benchmark outputs (country-level)
 
 Create benchmark profiles for each country using:
 - Predicted probability of high implementation capacity.

@@ -76,6 +76,11 @@ A reproducible ML workflow for assessing Pandemic Treaty implementation capacity
 
 - Method and variable framework: `research/README.md`
 - Training script (Random Forest + GBM + CV + metrics + optional PCA/SHAP): `research/latam_treaty_capacity_model.py`
+
+- Data acquisition and panel-building scripts:
+  - `research/download_public_sources.py`
+  - `research/build_latam_panel.py`
+
 - API endpoints for exploration and visualization:
   - `/research/dashboard` (interactive country dashboard)
   - `/research/overview`
