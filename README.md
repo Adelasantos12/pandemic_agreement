@@ -17,3 +17,23 @@ pip install -r research/requirements-ml.txt
 python research/build_latam_panel.py --help
 python research/latam_treaty_capacity_model.py --help
 ```
+
+
+## Railway deployment fix (Railpack)
+
+If Railpack reports `Script start.sh not found`, this branch now includes:
+
+- `start.sh` (entrypoint used by Railway)
+- `requirements.txt` (Python dependency manifest for build detection)
+- `research/railway_app.py` (minimal FastAPI app with `/` and `/health`)
+
+### Recommended Railway settings
+
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `./start.sh`
+
+After deploy, verify:
+
+```bash
+curl https://<your-railway-url>/health
+```
