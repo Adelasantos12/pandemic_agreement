@@ -68,3 +68,11 @@ curl -X POST https://<your-railway-url>/jobs \
 ```bash
 curl https://<your-railway-url>/jobs/{job_id}
 ```
+
+
+## Research module: LATAM implementation-capacity modeling
+
+A reproducible ML workflow for assessing Pandemic Treaty implementation capacity in LATAM is available in `research/`.
+
+- Method and variable framework: `research/README.md`
+- Training script (Random Forest + GBM + CV + metrics + optional PCA/SHAP): `research/latam_treaty_capacity_model.py`
