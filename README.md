@@ -37,3 +37,9 @@ After deploy, verify:
 ```bash
 curl https://<your-railway-url>/health
 ```
+
+
+### Legacy Railway start-command compatibility
+
+If your Railway service is still configured as `uvicorn apps.api.main:app`, it now also works via a compatibility shim in `apps/api/main.py`.
+Recommended command remains `./start.sh`.
