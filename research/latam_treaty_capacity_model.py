@@ -241,7 +241,8 @@ def main() -> None:
             "test_metrics": metrics,
         }
 
-    best_name = max(model_results.keys(), key=lambda m: model_results[m]["test_metrics"]["roc_auc"])
+    # Select the winning model using cross-validated validation performance only.
+    best_name = max(model_results.keys(), key=lambda m: model_results[m]["cv_best_roc_auc"])
     best_search = {"random_forest": rf_search, "gbm": gbm_search}[best_name]
     best_model = best_search.best_estimator_
 
