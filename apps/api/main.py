@@ -1,9 +1,9 @@
-from fastapi import FastAPI
-from .routers import jobs
+"""Legacy compatibility ASGI entrypoint.
 
-app = FastAPI(title="Treaty Influence Tracker")
-app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
+Some existing Railway services may still be configured with:
+    uvicorn apps.api.main:app
 
-@app.get("/health")
-def health():
-    return {"ok": True}
+This shim re-exports the ML workspace app so old start commands keep working.
+"""
+
+from research.railway_app import app  # re-export

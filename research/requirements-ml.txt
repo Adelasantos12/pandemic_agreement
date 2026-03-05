@@ -1,7 +1,5 @@
-fastapi
-uvicorn
 pandas
 numpy
 scikit-learn
-requests
 shap
+requests
